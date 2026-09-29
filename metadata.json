@@ -1,0 +1,6 @@
+{
+  "name": "Minimalist Quiz App",
+  "description": "A mobile-first minimalist black and white quiz application with notes and offline localStorage persistence.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

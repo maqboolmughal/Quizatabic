@@ -1,0 +1,1364 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>اختبار</title>
+    <meta name="description" content="تطبيق اختبار مبسط باللونين الأبيض والأسود مع الترجمة الأردية وتصدير ملف إكسل." />
+    <meta property="og:title" content="اختبار" />
+    <meta property="og:description" content="تطبيق اختبار مبسط باللونين الأبيض والأسود مع الترجمة الأردية وتصدير ملف إكسل." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+
+    <!-- SheetJS CDN for standalone single-file usage -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+    <style>
+      /* Reset & Mobile Optimization */
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, Tahoma, "Noto Nastaliq Urdu", sans-serif;
+        background-color: #ffffff;
+        color: #000000;
+        line-height: 1.6;
+        font-size: 16px;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        padding: 0;
+        direction: rtl;
+        text-align: right;
+      }
+
+      /* Container for Android / Mobile */
+      #app-container {
+        width: 100%;
+        max-width: 520px;
+        min-height: 100vh;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        border-left: 1px solid #000000;
+        border-right: 1px solid #000000;
+        position: relative;
+      }
+
+      @media (max-width: 520px) {
+        #app-container {
+          border-left: none;
+          border-right: none;
+        }
+      }
+
+      /* Screen Visibility */
+      .screen {
+        display: none;
+        width: 100%;
+        flex: 1;
+        flex-direction: column;
+      }
+
+      .screen.active {
+        display: flex;
+      }
+
+      /* SCREEN 1: HEADER & ACTIONS */
+      .header-list {
+        padding: 20px 16px 16px;
+        border-bottom: 2px solid #000000;
+      }
+
+      .header-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .header-list h1 {
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .btn-action {
+        background-color: #ffffff;
+        color: #000000;
+        border: 1px solid #000000;
+        padding: 8px 12px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        touch-action: manipulation;
+        min-height: 40px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-action:active {
+        background-color: #000000;
+        color: #ffffff;
+      }
+
+      .btn-action-primary {
+        background-color: #000000;
+        color: #ffffff;
+      }
+
+      .btn-action-primary:active {
+        background-color: #ffffff;
+        color: #000000;
+      }
+
+      /* TRANSLATION BUTTON (MINIMALIST B&W) */
+      .btn-lang {
+        background-color: #ffffff;
+        color: #000000;
+        border: 1px solid #000000;
+        padding: 4px 10px;
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        touch-action: manipulation;
+        min-height: 34px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .btn-lang:active {
+        background-color: #000000;
+        color: #ffffff;
+      }
+
+      /* GLOBAL NOTIFICATION / TOAST BANNER */
+      .toast-banner {
+        display: none;
+        padding: 12px 16px;
+        background-color: #000000;
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .toast-banner.show {
+        display: block;
+      }
+
+      /* NOTICE CARD IN HEADER */
+      .notice-card {
+        margin: 14px 16px 8px;
+        padding: 14px 16px;
+        border: 1.5px solid #000000;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .notice-card-title {
+        font-size: 16px;
+        font-weight: 800;
+        color: #000000;
+      }
+
+      .notice-card-content {
+        font-size: 15px;
+        line-height: 1.6;
+        color: #000000;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .notice-card-footer {
+        font-weight: 700;
+        color: #000000;
+        line-height: 1.6;
+      }
+
+      /* QUESTIONS LIST */
+      .question-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .question-row {
+        width: 100%;
+        padding: 16px;
+        border-bottom: 1px solid #000000;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        background-color: #ffffff;
+      }
+
+      .question-row:active {
+        background-color: #f0f0f0;
+      }
+
+      .question-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #000000;
+      }
+
+      .question-text-preview {
+        font-size: 15px;
+        color: #222222;
+        margin-top: 2px;
+        word-break: break-word;
+        line-height: 1.5;
+      }
+
+      .badges-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        margin-top: 6px;
+      }
+
+      .badge-answered {
+        display: inline-block;
+        border: 1px solid #000000;
+        padding: 2px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+
+      .badge-note {
+        display: inline-block;
+        border: 1px solid #000000;
+        padding: 2px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+
+      /* SCREEN 2: QUESTION DETAIL */
+      .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 2px solid #000000;
+      }
+
+      .btn-header {
+        background-color: #ffffff;
+        color: #000000;
+        border: 1px solid #000000;
+        padding: 8px 16px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: inherit;
+        touch-action: manipulation;
+        min-height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-header:active {
+        background-color: #000000;
+        color: #ffffff;
+      }
+
+      .detail-content {
+        padding: 20px 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .progress-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+
+      .progress-label {
+        font-size: 18px;
+        font-weight: 800;
+        color: #000000;
+      }
+
+      .detail-question-text {
+        font-size: 19px;
+        font-weight: 700;
+        line-height: 1.55;
+        margin-bottom: 24px;
+        word-break: break-word;
+      }
+
+      /* OPTIONS */
+      .options-container {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 28px;
+      }
+
+      .option-item {
+        border: 1px solid #000000;
+        padding: 14px;
+        cursor: pointer;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        background-color: #ffffff;
+        min-height: 52px;
+        touch-action: manipulation;
+      }
+
+      .option-item:active {
+        background-color: #f0f0f0;
+      }
+
+      .option-item.selected {
+        background-color: #000000;
+        color: #ffffff;
+      }
+
+      .radio-circle {
+        width: 20px;
+        height: 20px;
+        border: 2px solid #000000;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 3px;
+      }
+
+      .option-item.selected .radio-circle {
+        border-color: #ffffff;
+      }
+
+      .radio-inner {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: transparent;
+      }
+
+      .option-item.selected .radio-inner {
+        background-color: #ffffff;
+      }
+
+      .option-label-text {
+        font-size: 16px;
+        line-height: 1.5;
+        flex: 1;
+        word-break: break-word;
+      }
+
+      /* NOTE SECTION */
+      .note-section {
+        margin-bottom: 28px;
+      }
+
+      .note-label {
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: block;
+      }
+
+      .note-textarea {
+        width: 100%;
+        min-height: 110px;
+        padding: 12px;
+        border: 1px solid #000000;
+        border-radius: 0;
+        font-family: inherit;
+        font-size: 15px;
+        line-height: 1.5;
+        color: #000000;
+        background-color: #ffffff;
+        resize: vertical;
+        outline: none;
+        direction: rtl;
+        text-align: right;
+      }
+
+      .note-textarea:focus {
+        outline: 2px solid #000000;
+      }
+
+      /* FOOTER / NAVIGATION BUTTONS */
+      .detail-footer {
+        display: flex;
+        gap: 12px;
+        padding-top: 12px;
+        margin-top: auto;
+        padding-bottom: 24px;
+      }
+
+      .btn-nav {
+        flex: 1;
+        padding: 14px;
+        background-color: #ffffff;
+        color: #000000;
+        border: 1px solid #000000;
+        font-size: 16px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        min-height: 50px;
+        touch-action: manipulation;
+        text-align: center;
+      }
+
+      .btn-nav:active:not(:disabled) {
+        background-color: #000000;
+        color: #ffffff;
+      }
+
+      .btn-nav:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        border-color: #888888;
+        color: #888888;
+      }
+
+      /* CONFIRMATION MODAL */
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 20px;
+      }
+
+      .modal-overlay.active {
+        display: flex;
+      }
+
+      .modal-box {
+        background-color: #ffffff;
+        border: 2px solid #000000;
+        padding: 24px 20px;
+        width: 100%;
+        max-width: 360px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        direction: rtl;
+        text-align: right;
+      }
+
+      .modal-title {
+        font-size: 18px;
+        font-weight: 700;
+      }
+
+      .modal-description {
+        font-size: 14px;
+        color: #333333;
+        line-height: 1.5;
+      }
+
+      .modal-buttons {
+        display: flex;
+        gap: 10px;
+        margin-top: 8px;
+      }
+
+      .btn-modal {
+        flex: 1;
+        padding: 12px;
+        font-size: 15px;
+        font-weight: 700;
+        font-family: inherit;
+        cursor: pointer;
+        border: 1px solid #000000;
+        min-height: 44px;
+        touch-action: manipulation;
+        text-align: center;
+      }
+
+      .btn-modal-cancel {
+        background-color: #ffffff;
+        color: #000000;
+      }
+
+      .btn-modal-cancel:active {
+        background-color: #f0f0f0;
+      }
+
+      .btn-modal-confirm {
+        background-color: #000000;
+        color: #ffffff;
+      }
+
+      .btn-modal-confirm:active {
+        background-color: #333333;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="app-container">
+      <!-- TOAST BANNER -->
+      <div id="toast-banner" class="toast-banner" role="status" aria-live="polite">تم الحفظ بنجاح</div>
+
+      <!-- SCREEN 1: QUESTIONS LIST -->
+      <section id="screen-list" class="screen active">
+        <header class="header-list">
+          <div class="header-title-row">
+            <h1 id="app-title">اختبار</h1>
+            <div class="header-actions">
+              <button id="btn-lang-list" class="btn-lang" type="button" aria-label="تبديل اللغة">اردو</button>
+              <button id="btn-save-all" class="btn-action btn-action-primary" type="button">حفظ الكل</button>
+              <button id="btn-reset-open" class="btn-action" type="button">إعادة ضبط</button>
+            </div>
+          </div>
+        </header>
+
+        <!-- NOTICE BOX -->
+        <div class="notice-card" role="note" aria-label="ملاحظة">
+          <h2 class="notice-card-title">«ملاحظة»</h2>
+          <div class="notice-card-content">
+            <p>السلام عليكم، أنا لا أجيد اللغة العربية، فأرجو منكم التكرم بالإجابة عن هذه الأسئلة، فأنا بحاجة ماسّة إلى معرفة الإجابات الصحيحة.</p>
+            <p class="notice-card-footer">أنا من باكستان.<br />جزاكم الله خيرًا.</p>
+          </div>
+        </div>
+
+        <ul id="questions-ul" class="question-list">
+          <!-- Rendered dynamically -->
+        </ul>
+      </section>
+
+      <!-- SCREEN 2: QUESTION DETAIL -->
+      <section id="screen-detail" class="screen">
+        <header class="detail-header">
+          <button id="btn-back" class="btn-header" type="button">← رجوع</button>
+          <button id="btn-lang-detail-header" class="btn-lang" type="button" aria-label="تبديل اللغة">اردو</button>
+          <button id="btn-detail-save" class="btn-header" type="button">حفظ</button>
+        </header>
+
+        <div class="detail-content">
+          <div class="progress-row">
+            <div id="detail-progress" class="progress-label">السؤال 1</div>
+            <button id="btn-lang-detail-inline" class="btn-lang" type="button" aria-label="تبديل اللغة">اردو</button>
+          </div>
+
+          <div id="detail-question" class="detail-question-text">نص السؤال</div>
+
+          <div id="options-group" class="options-container">
+            <!-- Rendered dynamically: A), B), C), D) -->
+          </div>
+
+          <div class="note-section">
+            <label id="note-label-text" for="question-note-input" class="note-label">ملاحظة</label>
+            <textarea
+              id="question-note-input"
+              class="note-textarea"
+              placeholder="اكتب ملاحظتك هنا..."
+            ></textarea>
+          </div>
+
+          <footer class="detail-footer">
+            <button id="btn-previous" class="btn-nav" type="button">السابق</button>
+            <button id="btn-next" class="btn-nav" type="button">التالي</button>
+          </footer>
+        </div>
+      </section>
+
+      <!-- RESET CONFIRMATION MODAL -->
+      <div id="modal-reset" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="modal-reset-title">
+        <div class="modal-box">
+          <h2 id="modal-reset-title" class="modal-title">هل تريد إعادة ضبط الاختبار بالكامل؟</h2>
+          <p id="modal-reset-desc" class="modal-description">سيتم مسح جميع الإجابات المختارة والملاحظات، وإعادة تعيين تقدم الاختبار. ستبقى بنية الأسئلة كما هي دون تغيير.</p>
+          <div class="modal-buttons">
+            <button id="btn-reset-cancel" class="btn-modal btn-modal-cancel" type="button">إلغاء</button>
+            <button id="btn-reset-confirm" class="btn-modal btn-modal-confirm" type="button">إعادة ضبط</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ensure XLSX is available from npm bundle if Vite is running -->
+    <script type="module">
+      try {
+        import('xlsx').then(XLSX => {
+          if (!window.XLSX) {
+            window.XLSX = XLSX.default || XLSX;
+          }
+        }).catch(() => {});
+      } catch (e) {}
+    </script>
+
+    <script>
+      /**
+       * مصفوفة الأسئلة المزدوجة (عربي وأردي)
+       * الأسئلة والخيارات بالعربية افتراضياً مع ترجمة أردية واضحة ودقيقة.
+       * ترقيم الأسئلة يبدأ من 1 ويستمر بالتسلسل.
+       */
+      const defaultQuestions = [
+        {
+          id: 1,
+          question: {
+            ar: "إذا كنتُ أُصلّي خلف الإمام في صلاة الجماعة، فهل يجب عليَّ أن أقرأ سورة الفاتحة مع الإمام عندما يقرأها، أم يجب عليَّ أن أستمع إلى قراءة الإمام ولا أقرأ الفاتحة؟",
+            ur: "اگر میں باجماعت نماز میں امام کے پیچھے نماز پڑھ رہا ہوں، تو کیا جب امام سورۂ فاتحہ پڑھ رہے ہوں تو مجھ پر بھی ان کے ساتھ سورۂ فاتحہ پڑھنا واجب ہے، یا مجھ پر امام کی قراءت سننا واجب ہے اور میں فاتحہ نہ پڑھوں؟"
+          },
+          options: {
+            ar: [
+              "يجب عليَّ أن أقرأ الفاتحة مع الإمام.",
+              "يجب عليَّ أن أستمع إلى قراءة الإمام ولا أقرأ.",
+              "يختلف الحكم حسب نوع الصلاة.",
+              "لا فرق، ويجوز الأمران."
+            ],
+            ur: [
+              "مجھ پر امام کے ساتھ سورۂ فاتحہ پڑھنا واجب ہے۔",
+              "مجھ پر امام کی قراءت سننا واجب ہے اور میں نہ پڑھوں۔",
+              "نماز کی قسم کے لحاظ سے حکم مختلف ہوتا ہے۔",
+              "کوئی فرق نہیں ہے، دونوں صورتیں جائز ہیں۔"
+            ]
+          },
+          selectedIndex: null,
+          note: ""
+        },
+        {
+          id: 2,
+          question: {
+            ar: "في صلاة الجنازة، عندما يقول الإمام: «الله أكبر»، هل نرفع أيدينا في كل تكبيرة، ثم نضع أيدينا ونضمّها؟",
+            ur: "نمازِ جنازہ میں جب امام «اللہ اکبر» کہے، تو کیا ہم ہر تکبیر پر ہاتھ اٹھائیں، پھر ہاتھ باندھ لیں؟"
+          },
+          options: {
+            ar: [
+              "نعم، نرفع أيدينا عند كل تكبيرة ثم نضعهما ونضمّهما.",
+              "نرفع أيدينا فقط في التكبيرة الأولى.",
+              "لا نرفع أيدينا في صلاة الجنازة.",
+              "يختلف ذلك حسب مذهب الإمام."
+            ],
+            ur: [
+              "جی ہاں، ہم ہر تکبیر پر ہاتھ اٹھائیں گے پھر انہیں باندھیں گے۔",
+              "ہم صرف پہلی تکبیر میں ہاتھ اٹھائیں گے۔",
+              "ہم نمازِ جنازہ میں ہاتھ نہیں اٹھائیں گے۔",
+              "یہ امام کے مذہب کے مطابق مختلف ہوتا ہے۔"
+            ]
+          },
+          selectedIndex: null,
+          note: ""
+        },
+        {
+          id: 3,
+          question: {
+            ar: "في الصلاة، عند التسليم في نهاية الصلاة، هل نسلّم عن اليمين فقط، أم نسلّم عن اليمين وعن اليسار؟",
+            ur: "نماز کے آخر میں سلام پھیرتے وقت، کیا ہم صرف دائیں طرف سلام پھیریں یا دائیں اور بائیں دونوں طرف سلام پھیریں؟"
+          },
+          options: {
+            ar: [
+              "نسلّم عن اليمين فقط.",
+              "نسلّم عن اليمين وعن اليسار.",
+              "نسلّم عن اليسار فقط.",
+              "يجوز الأمران."
+            ],
+            ur: [
+              "ہم صرف دائیں طرف سلام پھیریں گے۔",
+              "ہم دائیں اور بائیں دونوں طرف سلام پھیریں گے۔",
+              "ہم صرف بائیں طرف سلام پھیریں گے۔",
+              "دونوں صورتیں جائز ہیں۔"
+            ]
+          },
+          selectedIndex: null,
+          note: ""
+        },
+        {
+          id: 4,
+          question: {
+            ar: "عند السجود في الصلاة، كيف تكون وضعية القدمين؟ وهل يجب أن تكون القدمان متقاربتين أم متباعدتين قليلًا؟",
+            ur: "نماز میں سجدے کے دوران دونوں پاؤں کی حالت کیسی ہونی چاہیے؟ اور کیا دونوں پاؤں ملے ہوئے ہونے چاہئیں یا ان کے درمیان کچھ فاصلہ ہونا چاہیے؟"
+          },
+          options: {
+            ar: [
+              "تكون القدمان متقاربتين جدًا.",
+              "تكون القدمان متباعدتين قليلًا.",
+              "لا توجد صفة محددة لوضع القدمين.",
+              "يختلف ذلك حسب المذهب."
+            ],
+            ur: [
+              "دونوں پاؤں بالکل آپس میں ملے ہوئے ہوں۔",
+              "دونوں پاؤں کے درمیان تھوڑا فاصلہ ہو۔",
+              "پاؤں رکھنے کی کوئی خاص کیفیت مقرر نہیں ہے۔",
+              "یہ مذہب کے لحاظ سے مختلف ہے۔"
+            ]
+          },
+          selectedIndex: null,
+          note: ""
+        },
+        {
+          id: 5,
+          question: {
+            ar: "إذا وقفنا أمام قبر شخصٍ متوفى، فهل يجوز لنا أن ندعو الله تعالى ونحن واقفون أمام القبر؟",
+            ur: "اگر ہم کسی فوت شدہ شخص کی قبر کے سامنے کھڑے ہوں، تو کیا قبر کے سامنے کھڑے ہو کر اللہ تعالیٰ سے دعا مانگنا جائز ہے؟"
+          },
+          options: {
+            ar: [
+              "نعم، يجوز الدعاء لله تعالى أمام القبر.",
+              "لا يجوز الدعاء أمام القبر مطلقًا.",
+              "يجوز الدعاء للميت فقط، ولا ندعو لأنفسنا.",
+              "يختلف الحكم حسب طريقة الدعاء ومكانه."
+            ],
+            ur: [
+              "جی ہاں، قبر کے سامنے اللہ تعالیٰ سے دعا مانگنا جائز ہے۔",
+              "قبر کے سامنے دعا مانگنا بالکل جائز نہیں ہے۔",
+              "صرف میت کے لیے دعا جائز ہے، اپنے لیے دعا نہ کریں۔",
+              "دعا کے طریقے اور جگہ کے لحاظ سے حکم مختلف ہوتا ہے۔"
+            ]
+          },
+          selectedIndex: null,
+          note: ""
+        },
+        {
+          id: 6,
+          question: {
+            ar: "هل يجوز للمصلّي أن يدعو الله تعالى لنفسه أثناء الصلاة؟",
+            ur: "کیا نمازی کے لیے دورانِ نماز اپنے لیے اللہ تعالیٰ سے دعا مانگنا جائز ہے؟"
+          },
+          options: {
+            ar: [
+              "نعم، يجوز أن يدعو لنفسه.",
+              "لا يجوز الدعاء للنفس أثناء الصلاة.",
+              "يجوز ذلك في بعض الصلوات فقط.",
+              "يجوز بعد الصلاة فقط."
+            ],
+            ur: [
+              "جی ہاں، اپنے لیے دعا مانگنا جائز ہے۔",
+              "دورانِ نماز اپنے لیے دعا مانگنا جائز نہیں ہے۔",
+              "یہ صرف بعض نمازوں میں جائز ہے۔",
+              "یہ صرف نماز کے بعد جائز ہے۔"
+            ]
+          },
+          selectedIndex: null,
+          note: ""
+        }
+      ];
+
+      // UI Texts dictionary
+      const i18n = {
+        ar: {
+          appTitle: "اختبار",
+          saveAll: "حفظ الكل",
+          reset: "إعادة ضبط",
+          back: "← رجوع",
+          save: "حفظ",
+          questionPrefix: "السؤال",
+          note: "ملاحظة",
+          notePlaceholder: "اكتب ملاحظتك هنا...",
+          previous: "السابق",
+          next: "التالي",
+          answeredBadge: "✓ تمت الإجابة",
+          noteBadge: "📝 ملاحظة",
+          savedToast: "تم الحفظ بنجاح",
+          resetModalTitle: "هل تريد إعادة ضبط الاختبار بالكامل؟",
+          resetModalDesc: "سيتم مسح جميع الإجابات المختارة والملاحظات، وإعادة تعيين تقدم الاختبار. ستبقى بنية الأسئلة كما هي دون تغيير.",
+          cancel: "إلغاء",
+          resetConfirm: "إعادة ضبط",
+          toggleTo: "اردو"
+        },
+        ur: {
+          appTitle: "کوئز",
+          saveAll: "سب محفوظ کریں",
+          reset: "ری سیٹ کریں",
+          back: "← واپسی",
+          save: "محفوظ کریں",
+          questionPrefix: "سوال",
+          note: "نوٹ",
+          notePlaceholder: "اپنا نوٹ یہاں لکھیں...",
+          previous: "پچھلا",
+          next: "اگلا",
+          answeredBadge: "✓ جواب دے دیا",
+          noteBadge: "📝 نوٹ",
+          savedToast: "کامیابی سے محفوظ ہو گیا",
+          resetModalTitle: "کیا آپ پورا کوئز ری سیٹ کرنا چاہتے ہیں؟",
+          resetModalDesc: "تمام منتخب کردہ جوابات اور نوٹس مٹ جائیں گے اور کوئز کی پیشرفت شروع سے ہو جائے گی۔ سوالات تبدیل نہیں ہوں گے۔",
+          cancel: "منسوخ",
+          resetConfirm: "ری سیٹ کریں",
+          toggleTo: "عربي"
+        }
+      };
+
+      const STORAGE_KEY = "quiz_app_saved_data_bilingual_v1";
+      const LANG_KEY = "quiz_app_current_lang";
+
+      // Application State
+      let currentLang = "ar"; // Default is Arabic
+      let quizData = [];
+      let currentQuestionIndex = 0;
+      let toastTimer = null;
+
+      // Load Language setting
+      function loadLanguage() {
+        const savedLang = localStorage.getItem(LANG_KEY);
+        if (savedLang === "ur" || savedLang === "ar") {
+          currentLang = savedLang;
+        } else {
+          currentLang = "ar";
+        }
+      }
+
+      // Auto-restore previously saved quiz state from localStorage
+      function restoreQuizState() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw);
+            const savedQuestions = Array.isArray(parsed) ? parsed : (parsed.questions || []);
+
+            if (Array.isArray(savedQuestions) && savedQuestions.length > 0) {
+              quizData = defaultQuestions.map((q, idx) => {
+                const existing = savedQuestions.find(item => item.id === q.id) || savedQuestions[idx];
+                let idxVal = null;
+                if (existing) {
+                  if (existing.selectedIndex !== undefined && existing.selectedIndex !== null) {
+                    idxVal = existing.selectedIndex;
+                  } else if (existing.selectedAnswer !== undefined && existing.selectedAnswer !== null) {
+                    // Backwards compatibility
+                    const letterIndex = ["A", "B", "C", "D"].indexOf(existing.selectedAnswer);
+                    if (letterIndex >= 0) {
+                      idxVal = letterIndex;
+                    } else {
+                      const foundIdx = q.options.ar.indexOf(existing.selectedAnswer);
+                      if (foundIdx >= 0) idxVal = foundIdx;
+                    }
+                  }
+                }
+                return {
+                  ...q,
+                  selectedIndex: idxVal,
+                  note: existing && existing.note !== undefined ? existing.note : ""
+                };
+              });
+
+              if (parsed.currentQuestionIndex !== undefined && Number.isInteger(parsed.currentQuestionIndex)) {
+                currentQuestionIndex = Math.max(0, Math.min(parsed.currentQuestionIndex, quizData.length - 1));
+              }
+              return;
+            }
+          }
+        } catch (e) {
+          console.error("Failed to restore quiz data from localStorage:", e);
+        }
+
+        // Fresh state clone
+        quizData = defaultQuestions.map(q => ({
+          ...q,
+          selectedIndex: null,
+          note: ""
+        }));
+        currentQuestionIndex = 0;
+      }
+
+      // Auto-save state to localStorage whenever answers/notes change
+      function persistStateToLocalStorage() {
+        try {
+          const answeredCount = quizData.filter(q => q.selectedIndex !== null && q.selectedIndex !== undefined).length;
+          const payload = {
+            version: 1,
+            savedAt: new Date().toISOString(),
+            totalQuestions: quizData.length,
+            answeredCount: answeredCount,
+            progressPercent: quizData.length > 0 ? Math.round((answeredCount / quizData.length) * 100) : 0,
+            currentQuestionIndex: currentQuestionIndex,
+            questions: quizData.map(q => ({
+              id: q.id,
+              selectedIndex: q.selectedIndex,
+              note: q.note
+            }))
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+        } catch (e) {
+          console.error("Failed to persist to localStorage:", e);
+        }
+      }
+
+      // Sync active note textarea into state
+      function syncCurrentNote() {
+        if (!quizData[currentQuestionIndex]) return;
+        const noteInput = document.getElementById("question-note-input");
+        if (noteInput) {
+          quizData[currentQuestionIndex].note = noteInput.value;
+        }
+      }
+
+      // Show toast confirmation
+      function showToast(message) {
+        const toast = document.getElementById("toast-banner");
+        toast.textContent = message;
+        toast.classList.add("show");
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          toast.classList.remove("show");
+        }, 2200);
+      }
+
+      // Toggle language
+      function toggleLanguage() {
+        currentLang = currentLang === "ar" ? "ur" : "ar";
+        try {
+          localStorage.setItem(LANG_KEY, currentLang);
+        } catch (e) {}
+
+        applyStaticUITexts();
+        renderQuestionsList();
+        renderDetailScreen();
+      }
+
+      function applyStaticUITexts() {
+        const t = i18n[currentLang];
+        document.getElementById("app-title").textContent = t.appTitle;
+        document.getElementById("btn-save-all").textContent = t.saveAll;
+        document.getElementById("btn-reset-open").textContent = t.reset;
+        document.getElementById("btn-back").textContent = t.back;
+        document.getElementById("btn-detail-save").textContent = t.save;
+        document.getElementById("note-label-text").textContent = t.note;
+        document.getElementById("question-note-input").placeholder = t.notePlaceholder;
+        document.getElementById("btn-previous").textContent = t.previous;
+        document.getElementById("btn-next").textContent = t.next;
+
+        // Toggle buttons text shows the alternative language
+        document.getElementById("btn-lang-list").textContent = t.toggleTo;
+        document.getElementById("btn-lang-detail-header").textContent = t.toggleTo;
+        document.getElementById("btn-lang-detail-inline").textContent = t.toggleTo;
+
+        // Modal texts
+        document.getElementById("modal-reset-title").textContent = t.resetModalTitle;
+        document.getElementById("modal-reset-desc").textContent = t.resetModalDesc;
+        document.getElementById("btn-reset-cancel").textContent = t.cancel;
+        document.getElementById("btn-reset-confirm").textContent = t.resetConfirm;
+      }
+
+      /**
+       * EXPORT TO EXCEL (.xlsx)
+       * Generates a single Excel file named "Quiz_Answers.xlsx" with worksheet "Quiz".
+       * Columns:
+       * 1. No.
+       * 2. Question
+       * 3. Selected Answer (A/B/C/D or blank if unselected)
+       * 4. Option A
+       * 5. Option B
+       * 6. Option C
+       * 7. Option D
+       * 8. Note
+       */
+      function exportToExcel() {
+        const headers = ["No.", "Question", "Selected Answer", "Option A", "Option B", "Option C", "Option D", "Note"];
+        const rows = [headers];
+
+        quizData.forEach((q, index) => {
+          let selectedLetter = "";
+          if (q.selectedIndex !== null && q.selectedIndex !== undefined && q.selectedIndex >= 0 && q.selectedIndex < 4) {
+            selectedLetter = String.fromCharCode(65 + q.selectedIndex); // A, B, C, D
+          }
+
+          const qText = q.question[currentLang] || q.question.ar;
+          const optionsArr = q.options[currentLang] || q.options.ar;
+
+          const optA = (optionsArr && optionsArr[0] !== undefined) ? String(optionsArr[0]) : "";
+          const optB = (optionsArr && optionsArr[1] !== undefined) ? String(optionsArr[1]) : "";
+          const optC = (optionsArr && optionsArr[2] !== undefined) ? String(optionsArr[2]) : "";
+          const optD = (optionsArr && optionsArr[3] !== undefined) ? String(optionsArr[3]) : "";
+          const noteText = q.note ? String(q.note) : "";
+
+          rows.push([
+            index + 1,
+            qText,
+            selectedLetter,
+            optA,
+            optB,
+            optC,
+            optD,
+            noteText
+          ]);
+        });
+
+        // Use SheetJS if available
+        if (window.XLSX) {
+          const ws = window.XLSX.utils.aoa_to_sheet(rows);
+
+          // Configure column widths
+          ws["!cols"] = [
+            { wch: 6 },   // No.
+            { wch: 60 },  // Question
+            { wch: 18 },  // Selected Answer
+            { wch: 32 },  // Option A
+            { wch: 32 },  // Option B
+            { wch: 32 },  // Option C
+            { wch: 32 },  // Option D
+            { wch: 35 }   // Note
+          ];
+
+          const wb = window.XLSX.utils.book_new();
+          window.XLSX.utils.book_append_sheet(wb, ws, "Quiz");
+
+          try {
+            window.XLSX.writeFile(wb, "Quiz_Answers.xlsx");
+            return;
+          } catch (err) {
+            console.warn("XLSX.writeFile encountered an issue, trying direct Blob fallback:", err);
+            const wbout = window.XLSX.write(wb, { bookType: "xlsx", type: "array" });
+            const blob = new Blob([wbout], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+            triggerBlobDownload(blob, "Quiz_Answers.xlsx");
+            return;
+          }
+        }
+
+        // Fallback: XML Spreadsheet 2003
+        fallbackXmlExcelDownload(rows);
+      }
+
+      function triggerBlobDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1500);
+      }
+
+      function fallbackXmlExcelDownload(rows) {
+        let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+        xml += '<?mso-application progid="Excel.Sheet"?>\n';
+        xml += '<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">\n';
+        xml += '  <Worksheet ss:Name="Quiz">\n';
+        xml += '    <Table>\n';
+
+        rows.forEach((row) => {
+          xml += '      <Row>\n';
+          row.forEach((cell) => {
+            const isNum = typeof cell === "number";
+            const val = String(cell).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            xml += `        <Cell><Data ss:Type="${isNum ? "Number" : "String"}">${val}</Data></Cell>\n`;
+          });
+          xml += '      </Row>\n';
+        });
+
+        xml += '    </Table>\n';
+        xml += '  </Worksheet>\n';
+        xml += '</Workbook>';
+
+        const blob = new Blob([xml], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8" });
+        triggerBlobDownload(blob, "Quiz_Answers.xlsx");
+      }
+
+      // SAVE ALL:
+      function executeGlobalSave() {
+        syncCurrentNote();
+        persistStateToLocalStorage();
+        exportToExcel();
+        showToast(i18n[currentLang].savedToast);
+      }
+
+      // RESET:
+      function openResetModal() {
+        document.getElementById("modal-reset").classList.add("active");
+      }
+
+      function closeResetModal() {
+        document.getElementById("modal-reset").classList.remove("active");
+      }
+
+      function confirmReset() {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch (e) {
+          console.error("Failed to clear localStorage:", e);
+        }
+
+        // Reset user progress without altering question bank
+        quizData = defaultQuestions.map(q => ({
+          ...q,
+          selectedIndex: null,
+          note: ""
+        }));
+        currentQuestionIndex = 0;
+
+        closeResetModal();
+        renderQuestionsList();
+        showScreen("screen-list");
+        showToast(currentLang === "ur" ? "کوئز ری سیٹ کر دیا گیا" : "تمت إعادة ضبط الاختبار");
+      }
+
+      // SCREEN NAVIGATION
+      function showScreen(screenId) {
+        document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+        const target = document.getElementById(screenId);
+        if (target) {
+          target.classList.add("active");
+          window.scrollTo(0, 0);
+        }
+      }
+
+      // SCREEN 1: RENDER QUESTIONS LIST
+      function renderQuestionsList() {
+        const ul = document.getElementById("questions-ul");
+        ul.innerHTML = "";
+
+        const t = i18n[currentLang];
+
+        quizData.forEach((q, index) => {
+          const li = document.createElement("li");
+          li.className = "question-row";
+          li.tabIndex = 0;
+          li.setAttribute("role", "button");
+
+          const qText = q.question[currentLang] || q.question.ar;
+          li.setAttribute("aria-label", `${t.questionPrefix} ${index + 1}: ${qText}`);
+
+          // Title
+          const title = document.createElement("div");
+          title.className = "question-title";
+          title.textContent = `${t.questionPrefix} ${index + 1}`;
+
+          // Question text preview
+          const text = document.createElement("div");
+          text.className = "question-text-preview";
+          text.textContent = qText;
+
+          li.appendChild(title);
+          li.appendChild(text);
+
+          // Status Badges
+          const hasAnswer = q.selectedIndex !== null && q.selectedIndex !== undefined;
+          const hasNote = q.note && q.note.trim().length > 0;
+
+          if (hasAnswer || hasNote) {
+            const badgesDiv = document.createElement("div");
+            badgesDiv.className = "badges-row";
+
+            if (hasAnswer) {
+              const ansBadge = document.createElement("span");
+              ansBadge.className = "badge-answered";
+              ansBadge.textContent = t.answeredBadge;
+              badgesDiv.appendChild(ansBadge);
+            }
+
+            if (hasNote) {
+              const noteBadge = document.createElement("span");
+              noteBadge.className = "badge-note";
+              noteBadge.textContent = t.noteBadge;
+              badgesDiv.appendChild(noteBadge);
+            }
+
+            li.appendChild(badgesDiv);
+          }
+
+          // Open detail screen
+          li.addEventListener("click", () => {
+            openQuestionDetail(index);
+          });
+          li.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              openQuestionDetail(index);
+            }
+          });
+
+          ul.appendChild(li);
+        });
+      }
+
+      // SCREEN 2: RENDER QUESTION DETAIL
+      function openQuestionDetail(index) {
+        currentQuestionIndex = index;
+        renderDetailScreen();
+        showScreen("screen-detail");
+      }
+
+      function renderDetailScreen() {
+        const q = quizData[currentQuestionIndex];
+        if (!q) return;
+
+        const t = i18n[currentLang];
+
+        // Question title
+        document.getElementById("detail-progress").textContent = `${t.questionPrefix} ${currentQuestionIndex + 1}`;
+
+        // Question text
+        document.getElementById("detail-question").textContent = q.question[currentLang] || q.question.ar;
+
+        // Options: A), B), C), D)
+        const optionsGroup = document.getElementById("options-group");
+        optionsGroup.innerHTML = "";
+
+        const optionLetters = ["A", "B", "C", "D"];
+        const optionsList = q.options[currentLang] || q.options.ar;
+
+        optionsList.forEach((optText, optIdx) => {
+          const item = document.createElement("div");
+          const isSelected = q.selectedIndex === optIdx;
+          item.className = "option-item" + (isSelected ? " selected" : "");
+          item.tabIndex = 0;
+          item.setAttribute("role", "radio");
+          item.setAttribute("aria-checked", isSelected ? "true" : "false");
+
+          // Radio circle
+          const circle = document.createElement("div");
+          circle.className = "radio-circle";
+          const inner = document.createElement("div");
+          inner.className = "radio-inner";
+          circle.appendChild(inner);
+
+          // Option label with A), B), C), D) format
+          const letter = optionLetters[optIdx] || String.fromCharCode(65 + optIdx);
+          const label = document.createElement("div");
+          label.className = "option-label-text";
+          label.textContent = `${letter}) ${optText}`;
+
+          item.appendChild(circle);
+          item.appendChild(label);
+
+          const selectOption = () => {
+            syncCurrentNote();
+            q.selectedIndex = optIdx;
+            persistStateToLocalStorage();
+            renderDetailScreen();
+          };
+
+          item.addEventListener("click", selectOption);
+          item.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              selectOption();
+            }
+          });
+
+          optionsGroup.appendChild(item);
+        });
+
+        // Note textarea
+        const noteInput = document.getElementById("question-note-input");
+        noteInput.value = q.note || "";
+
+        // Footer navigation buttons
+        const prevBtn = document.getElementById("btn-previous");
+        const nextBtn = document.getElementById("btn-next");
+
+        prevBtn.disabled = currentQuestionIndex <= 0;
+        nextBtn.disabled = currentQuestionIndex >= quizData.length - 1;
+      }
+
+      // EVENT LISTENERS
+
+      // Language Toggle Buttons
+      document.getElementById("btn-lang-list").addEventListener("click", () => {
+        toggleLanguage();
+      });
+      document.getElementById("btn-lang-detail-header").addEventListener("click", () => {
+        toggleLanguage();
+      });
+      document.getElementById("btn-lang-detail-inline").addEventListener("click", () => {
+        toggleLanguage();
+      });
+
+      // Main Screen: Save All
+      document.getElementById("btn-save-all").addEventListener("click", () => {
+        executeGlobalSave();
+      });
+
+      // Main Screen: Reset
+      document.getElementById("btn-reset-open").addEventListener("click", () => {
+        openResetModal();
+      });
+
+      // Modal: Cancel Reset
+      document.getElementById("btn-reset-cancel").addEventListener("click", () => {
+        closeResetModal();
+      });
+
+      // Modal: Confirm Reset
+      document.getElementById("btn-reset-confirm").addEventListener("click", () => {
+        confirmReset();
+      });
+
+      // Close modal on Escape
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          closeResetModal();
+        }
+      });
+
+      // Detail Screen: Back
+      document.getElementById("btn-back").addEventListener("click", () => {
+        syncCurrentNote();
+        persistStateToLocalStorage();
+        renderQuestionsList();
+        showScreen("screen-list");
+      });
+
+      // Detail Screen: Save
+      document.getElementById("btn-detail-save").addEventListener("click", () => {
+        executeGlobalSave();
+      });
+
+      // Detail Screen: Previous
+      document.getElementById("btn-previous").addEventListener("click", () => {
+        if (currentQuestionIndex > 0) {
+          syncCurrentNote();
+          persistStateToLocalStorage();
+          currentQuestionIndex--;
+          renderDetailScreen();
+          window.scrollTo(0, 0);
+        }
+      });
+
+      // Detail Screen: Next
+      document.getElementById("btn-next").addEventListener("click", () => {
+        if (currentQuestionIndex < quizData.length - 1) {
+          syncCurrentNote();
+          persistStateToLocalStorage();
+          currentQuestionIndex++;
+          renderDetailScreen();
+          window.scrollTo(0, 0);
+        }
+      });
+
+      // Detail Screen: Auto-persist note as user types
+      document.getElementById("question-note-input").addEventListener("input", (e) => {
+        if (quizData[currentQuestionIndex]) {
+          quizData[currentQuestionIndex].note = e.target.value;
+          persistStateToLocalStorage();
+        }
+      });
+
+      // App Initialization
+      loadLanguage();
+      restoreQuizState();
+      applyStaticUITexts();
+      renderQuestionsList();
+    </script>
+  </body>
+</html>
